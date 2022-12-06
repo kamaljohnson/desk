@@ -3,11 +3,12 @@ from twilio.rest import Client
 import frappe
 from twilio.twiml.voice_response import VoiceResponse
 from frappedesk.utils import get_public_url
-from frappedesk.handler import Twilio
+from frappedesk.handler.twilio import Twilio
 
 
 @frappe.whitelist()
-def call(contact_id, phone_number, agent_id):
+def call(contact_id, phone_number, agent_id, ticket_id):
+	"""Make a call to the given phone number"""
 	to = phone_number
 
 	agent = frappe.get_doc("Agent", agent_id)
@@ -22,19 +23,6 @@ def call(contact_id, phone_number, agent_id):
 	if not from_:
 		frappe.throw("Phone Number not found for agent: {0}".format(agent_id))
 
-	frappe.get_doc(
-		{
-			"doctype": "FD Twilio Call Log",
-			"call_sid": call.sid,
-			"twilio_number": twilio_number,
-			"to": to,
-			"from_": from_,
-			"contact": contact_id,
-			"agent": agent_id,
-			"status": "queued",
-		}
-	).insert()
-
 	twilio = Twilio.connect()
 	if not twilio:
 		frappe.throw("Twilio not connected")
@@ -45,10 +33,24 @@ def call(contact_id, phone_number, agent_id):
 		url=get_public_url("/api/method/frappedesk.frappedesk.api.twilio.outbound"),
 	)
 
+	call_log = frappe.get_doc(
+		{
+			"doctype": "FD Twilio Call Log",
+			"call_sid": call.sid,
+			"twilio_number": twilio_number,
+			"to": to,
+			"from_": from_,
+			"status": "queued",
+			"reference_contact": contact_id,
+			"reference_agent": agent_id,
+			"reference_ticket": ticket_id,
+		}
+	).insert()
+
 	# create call log
 	# add a hook to update the call log, refer: https://www.twilio.com/docs/voice/tutorials/how-to-retrieve-call-logs/python?code-sample=code-list-all-calls-example&code-language=Python&code-sdk-version=7.x#
 
-	return call.sid
+	return call_log
 
 
 @frappe.whitelist(allow_guest=True)

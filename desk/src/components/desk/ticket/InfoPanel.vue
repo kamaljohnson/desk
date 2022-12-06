@@ -50,16 +50,19 @@
 								<a
 									:title="phone_no.phone"
 									class="text-gray-700 text-base"
-									>{{ phone_no.phone }}</a
 								>
+									{{ phone_no.phone }}
+								</a>
 								<div
 									class="bg-blue-500 text-white px-2 py-0.5 rounded-md shadow-sm hover:shadow-md"
 									role="button"
 									@click="
 										() => {
 											$event.emit('dialer:make-call', {
-												ticketId: ticket.name,
-												to: phone_no.phone,
+												contact_id: contact.name,
+												phone_number: phone_no.phone,
+												agent_id: user.agent.name,
+												ticket_id: ticket.name,
 											})
 										}
 									"
@@ -370,6 +373,7 @@ export default {
 		NewContactDialog,
 	},
 	setup(props) {
+		const user = inject("user")
 		const viewportWidth = inject("viewportWidth")
 
 		const editingContact = ref(false)
@@ -396,6 +400,7 @@ export default {
 		})
 
 		return {
+			user,
 			ticket,
 			contact,
 

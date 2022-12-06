@@ -104,7 +104,7 @@ export default {
 		const createCallLogDocumentResource = (callLogId) => {
 			resource.value = createDocumentResource(
 				{
-					doctype: "Avaya Call Log",
+					doctype: "FD Twilio Call Log",
 					name: callLogId,
 					debounce: 300,
 					realtime: true,
@@ -160,7 +160,8 @@ export default {
 							.format("H:m:s")
 					}, 1000)
 				}
-				if (["completed", "failed"].includes(newVal.status)) {
+				// if call log status belongs to one of the end states, then close the dialer
+				if (callLogEndStatuses().includes(newVal.status)) {
 					this.closeDialer()
 				}
 			}
@@ -173,10 +174,10 @@ export default {
 		}
 
 		this.$socket.on("list_update", (data) => {
-			if (this.callLog && this.callLog.ticket_ref) {
+			if (this.callLog) {
 				if (
-					data["doctype"] === "Avaya Call Log" &&
-					data["name"].split("-")[1] === this.callLog.ticket_ref
+					data["doctype"] === "FD Twilio Call Log" &&
+					data["name"] === this.callLog.name
 				) {
 					if (this.resource) {
 						this.resource.get.fetch()
@@ -195,7 +196,7 @@ export default {
 				return
 			}
 			this.show = true
-			this.makeCall(options)
+			this.$resources.makeCall.submit(options)
 		})
 	},
 	unmounted() {
@@ -203,23 +204,23 @@ export default {
 		this.$event.off("dialer:make-call")
 	},
 	methods: {
-		makeCall(options) {
-			this.$resources.makeCall.submit({
-				ticket_id: options.ticketId,
-				to: options.to,
-			})
-		},
+		makeCall(options) {},
 		async closeDialer() {
 			await new Promise((resolve) => setTimeout(resolve, 3000))
 			this.show = false
+		},
+		callLogEndStatuses() {
+			return ["completed", "busy", "no-answer", "canceled", "failed"]
 		},
 	},
 	resources: {
 		makeCall() {
 			return {
-				method: "frappedesk.api.avaya.make_call",
-				onSuccess: (callLogId) => {
-					this.createCallLogDocumentResource(callLogId)
+				method: "frappedesk.api.twilio.call",
+				onSuccess: (res) => {
+					console.log(res)
+					// TODO: check what is the res and uncomment the below line
+					// this.createCallLogDocumentResource(callLogId)
 				},
 				onError: (err) => {
 					this.$toast({
@@ -235,10 +236,19 @@ export default {
 			return {
 				method: "frappe.client.get_list",
 				params: {
-					doctype: "Avaya Call Log",
+					doctype: "FD Twilio Call Log",
 					filters: {
-						agent_ref: this.user.agent.name,
-						status: ["not in", ["completed", "failed"]],
+						reference_agent: this.user.agent.name,
+						status: [
+							"not in",
+							[
+								"completed",
+								"busy",
+								"no-answer",
+								"canceled",
+								"failed",
+							],
+						],
 					},
 					fields: ["name"],
 				},

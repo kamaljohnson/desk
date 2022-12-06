@@ -99,10 +99,10 @@ export default {
 				cache: ["Ticket", "CallLogs", this.ticketId],
 				method: "frappe.client.get_list",
 				params: {
-					doctype: "Avaya Call Log",
+					doctype: "FD Twilio Call Log",
 					fields: ["*"],
 					filters: {
-						ticket_ref: this.ticketId,
+						reference_ticket: this.ticketId,
 					},
 					order_by: "creation asc",
 				},
@@ -162,7 +162,7 @@ export default {
 				this.$resources.comments.fetch()
 			}
 			if (
-				data["doctype"] === "Avaya Call Log" &&
+				data["doctype"] === "FD Twilio Call Log" &&
 				data["name"].split("-")[1] === this.ticketId
 			) {
 				this.$resources.callLogs.fetch()

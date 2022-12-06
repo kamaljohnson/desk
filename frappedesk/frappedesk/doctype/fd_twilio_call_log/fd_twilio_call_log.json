@@ -1,6 +1,6 @@
 {
 	"actions": [],
-	"allow_rename": 1,
+	"autoname": "format:CLOG-{reference_ticket}-{#######}",
 	"creation": "2022-12-05 16:06:33.034555",
 	"default_view": "List",
 	"doctype": "DocType",
@@ -11,11 +11,13 @@
 		"twilio_number",
 		"to",
 		"from_",
-		"contact",
-		"agent",
 		"status",
 		"duration",
-		"recording_url"
+		"recording_url",
+		"references_section",
+		"reference_ticket",
+		"reference_agent",
+		"reference_contact"
 	],
 	"fields": [
 		{
@@ -59,26 +61,38 @@
 			"label": "From"
 		},
 		{
-			"fieldname": "contact",
-			"fieldtype": "Link",
-			"in_list_view": 1,
-			"label": "Contact",
-			"options": "Contact"
+			"fieldname": "references_section",
+			"fieldtype": "Section Break",
+			"label": "References"
 		},
 		{
-			"fieldname": "agent",
+			"fieldname": "reference_ticket",
+			"fieldtype": "Link",
+			"label": "Ticket",
+			"options": "Ticket"
+		},
+		{
+			"fieldname": "reference_agent",
 			"fieldtype": "Link",
 			"in_list_view": 1,
 			"label": "Agent",
 			"options": "Agent"
+		},
+		{
+			"fieldname": "reference_contact",
+			"fieldtype": "Link",
+			"in_list_view": 1,
+			"label": "Contact",
+			"options": "Contact"
 		}
 	],
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2022-12-06 10:57:31.119341",
+	"modified": "2022-12-07 01:41:07.540739",
 	"modified_by": "Administrator",
 	"module": "FrappeDesk",
 	"name": "FD Twilio Call Log",
+	"naming_rule": "Expression",
 	"owner": "Administrator",
 	"permissions": [
 		{
