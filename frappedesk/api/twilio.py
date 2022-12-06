@@ -30,7 +30,7 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 	call = twilio.call(
 		to=to,
 		from_=twilio_number,
-		url=get_public_url("/api/method/frappedesk.frappedesk.api.twilio.outbound"),
+		url=get_public_url("/api/method/frappedesk.api.twilio.outbound"),
 	)
 
 	call_log = frappe.get_doc(
@@ -62,7 +62,6 @@ def outbound(**kwargs):
 		return
 
 	assert args.AccountSid == twilio.account_sid
-	assert args.ApplicationSid == twilio.application_sid
 
 	response = VoiceResponse()
 
