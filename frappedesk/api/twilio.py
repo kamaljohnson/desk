@@ -43,12 +43,13 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 			"reference_contact": contact_id,
 			"reference_agent": agent_id,
 			"reference_ticket": ticket_id,
+			"call_started_at": frappe.utils.now(),  # TODO: only set the call_started_at when the call log status is updated to in-progress
 		}
 	).insert()
 
 	# update call logs via a hook to update the call log, refer: https://www.twilio.com/docs/voice/tutorials/how-to-retrieve-call-logs/python?code-sample=code-list-all-calls-example&code-language=Python&code-sdk-version=7.x#
 
-	return call_log
+	return call_log.name
 
 
 @frappe.whitelist(allow_guest=True)

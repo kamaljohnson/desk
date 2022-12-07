@@ -27,14 +27,16 @@
 					</div>
 					<router-link
 						:to="{
-							path: `/frappedesk/tickets/${callLog.ticket_ref}`,
+							path: `/frappedesk/tickets/${callLog.reference_ticket}`,
 						}"
 					>
 						<div
 							class="flex flex-row items-center justify-between w-full text-base text-gray-600 hover:text-gray-900"
 							role="button"
 						>
-							<div>{{ `Ticket: #${callLog.ticket_ref}` }}</div>
+							<div>
+								{{ `Ticket: #${callLog.reference_ticket}` }}
+							</div>
 							<FeatherIcon
 								name="arrow-up-right"
 								class="h-4 w-4"
@@ -43,14 +45,16 @@
 					</router-link>
 					<router-link
 						:to="{
-							path: `/frappedesk/contacts/${callLog.contact_ref}`,
+							path: `/frappedesk/contacts/${callLog.reference_contact}`,
 						}"
 					>
 						<div
 							class="flex flex-row items-center justify-between w-full text-base text-gray-600 hover:text-gray-900"
 							role="button"
 						>
-							<div>{{ `Contact: ${callLog.contact_ref}` }}</div>
+							<div>
+								{{ `Contact: ${callLog.reference_contact}` }}
+							</div>
 							<FeatherIcon
 								name="arrow-up-right"
 								class="h-4 w-4"
@@ -161,7 +165,7 @@ export default {
 					}, 1000)
 				}
 				// if call log status belongs to one of the end states, then close the dialer
-				if (callLogEndStatuses().includes(newVal.status)) {
+				if (this.callLogEndStatuses().includes(newVal.status)) {
 					this.closeDialer()
 				}
 			}
@@ -217,10 +221,8 @@ export default {
 		makeCall() {
 			return {
 				method: "frappedesk.api.twilio.call",
-				onSuccess: (res) => {
-					console.log(res)
-					// TODO: check what is the res and uncomment the below line
-					// this.createCallLogDocumentResource(callLogId)
+				onSuccess: (callLogId) => {
+					this.createCallLogDocumentResource(callLogId)
 				},
 				onError: (err) => {
 					this.$toast({
