@@ -54,6 +54,10 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 
 @frappe.whitelist(allow_guest=True)
 def outbound(**kwargs):
+	"""
+		Outbound call url, this is called when the client receives the call made via twilio, 
+		the call is redirected to the agent number via this url
+	"""
 	args = frappe._dict(kwargs)
 
 	twilio = Twilio.connect()
@@ -66,17 +70,15 @@ def outbound(**kwargs):
 
 	resp = VoiceResponse()
 
-	resp.say(
-		"This call may be recorded for quality assurance purposes.", voice="alice",
-	)
+	# uncomment this to say some thing to the client before connecting the call
+	# resp.say(
+	# 	"This call may be recorded for quality assurance purposes.", voice="alice",
+	# )
 
 	print("twilio_call_log", twilio_call_log)
 
 	dial = Dial(
 		caller_id=twilio_call_log.twilio_number,
-		# record=self.settings.record_calls,
-		# recording_status_callback=self.get_recording_status_callback_url(),
-		# recording_status_callback_event='completed'
 	)
 	dial.number(
 		twilio_call_log.from_,
@@ -91,8 +93,8 @@ def outbound(**kwargs):
 
 @frappe.whitelist(allow_guest=True)
 def call_events(**kwargs):
+	"""Callback url to update the call log status"""
 	args = frappe._dict(kwargs)
-	print("CALL EVENTS", args.ParentCallSid, args.CallStatus)
 
 	twilio_call_log = frappe.get_doc(
 		"FD Twilio Call Log", {"call_sid": args.ParentCallSid}
