@@ -1,7 +1,6 @@
-import os
-from twilio.rest import Client
+from werkzeug.wrappers import Response
 import frappe
-from twilio.twiml.voice_response import VoiceResponse
+from twilio.twiml.voice_response import VoiceResponse, Dial
 from frappedesk.utils import get_public_url
 from frappedesk.handler.twilio import Twilio
 
@@ -47,8 +46,7 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 		}
 	).insert()
 
-	# create call log
-	# add a hook to update the call log, refer: https://www.twilio.com/docs/voice/tutorials/how-to-retrieve-call-logs/python?code-sample=code-list-all-calls-example&code-language=Python&code-sdk-version=7.x#
+	# update call logs via a hook to update the call log, refer: https://www.twilio.com/docs/voice/tutorials/how-to-retrieve-call-logs/python?code-sample=code-list-all-calls-example&code-language=Python&code-sdk-version=7.x#
 
 	return call_log
 
@@ -63,9 +61,22 @@ def outbound(**kwargs):
 
 	assert args.AccountSid == twilio.account_sid
 
-	response = VoiceResponse()
+	twilio_call_log = frappe.doc("FD Twilio Call Log", {"call_sid": args.CallSid})
 
-	from_ = frappe.get_value("FD Twilio Call Log", {"call_sid": args.CallSid}, "_from")
-	response.number(from_)
+	resp = VoiceResponse()
+	resp.say(
+		"This is from CRED support, we have finally made the Twilio integration in"
+		" Frappe Desk",
+		voice="alice",
+	)
 
-	return str(response)
+	dial = Dial(
+		caller_id=twilio_call_log.twilio_number,
+		# record=self.settings.record_calls,
+		# recording_status_callback=self.get_recording_status_callback_url(),
+		# recording_status_callback_event='completed'
+	)
+	dial.number(twilio_call_log.from_)
+	resp.append(dial)
+
+	return Response(resp.to_xml(), mimetype="text/xml")
