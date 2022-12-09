@@ -84,8 +84,7 @@
 </template>
 
 <script>
-import { Avatar, FeatherIcon } from "frappe-ui"
-import { createDocumentResource } from "frappe-ui"
+import { Avatar, FeatherIcon, createDocumentResource } from "frappe-ui"
 import { ref, computed, inject } from "vue"
 
 export default {

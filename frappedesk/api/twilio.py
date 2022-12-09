@@ -43,7 +43,6 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 			"reference_contact": contact_id,
 			"reference_agent": agent_id,
 			"reference_ticket": ticket_id,
-			"call_started_at": frappe.utils.now(),  # TODO: only set the call_started_at when the call log status is updated to in-progress
 		}
 	).insert()
 
@@ -55,8 +54,8 @@ def call(contact_id, phone_number, agent_id, ticket_id):
 @frappe.whitelist(allow_guest=True)
 def outbound(**kwargs):
 	"""
-		Outbound call url, this is called when the client receives the call made via twilio, 
-		the call is redirected to the agent number via this url
+	Outbound call url, this is called when the client receives the call made via twilio,
+	the call is redirected to the agent number via this url
 	"""
 	args = frappe._dict(kwargs)
 
@@ -77,9 +76,7 @@ def outbound(**kwargs):
 
 	print("twilio_call_log", twilio_call_log)
 
-	dial = Dial(
-		caller_id=twilio_call_log.twilio_number,
-	)
+	dial = Dial(caller_id=twilio_call_log.twilio_number,)
 	dial.number(
 		twilio_call_log.from_,
 		status_callback_event="initiated ringing answered completed",
@@ -96,10 +93,13 @@ def call_events(**kwargs):
 	"""Callback url to update the call log status"""
 	args = frappe._dict(kwargs)
 
-	twilio_call_log = frappe.get_doc(
+	if args.ParentCallSid and frappe.db.exists(
 		"FD Twilio Call Log", {"call_sid": args.ParentCallSid}
-	)
-	twilio_call_log.status = args.CallStatus
-	twilio_call_log.save(ignore_permissions=True)
-
-	return Response()
+	):
+		twilio_call_log = frappe.get_doc(
+			"FD Twilio Call Log", {"call_sid": args.ParentCallSid}
+		)
+		twilio_call_log.status = args.CallStatus
+		if twilio_call_log.status == "in-progress" and not twilio_call_log.call_started_at:
+			twilio_call_log.call_started_at = frappe.utils.now()
+		twilio_call_log.save(ignore_permissions=True)
