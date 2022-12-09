@@ -32,7 +32,10 @@
 							v-else-if="conversation.type == 'Comment'"
 							:comment="conversation"
 						/>
-						<CallLogCard v-else :callLog="conversation" />
+						<CallLogCard
+							v-else-if="conversation.type == 'CallLog'"
+							:callLog="conversation"
+						/>
 					</div>
 				</div>
 			</div>
@@ -96,7 +99,7 @@ export default {
 		},
 		callLogs() {
 			return {
-				cache: ["Ticket", "CallLogs", this.ticketId],
+				cache: ["Ticket", "FD Twilio Call Logs", this.ticketId],
 				method: "frappe.client.get_list",
 				params: {
 					doctype: "FD Twilio Call Log",
@@ -131,6 +134,7 @@ export default {
 				[...communications, ...comments, ...callLogs].sort(
 					(a, b) => new Date(a.creation) - new Date(b.creation)
 				) || []
+
 			return conversations
 		},
 		communications() {

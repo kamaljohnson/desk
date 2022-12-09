@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="callLog && agent"
+		v-if="callLog && agent.doc"
 		class="flex flex-col my-[16px] px-[8px] text-base"
 	>
 		<div class="flex flex-row justify-between">
@@ -13,7 +13,7 @@
 						/>
 					</div>
 					<div class="font-medium text-base text-gray-900">
-						{{ agent.agent_name }}
+						{{ agent.doc.agent_name }}
 					</div>
 				</div>
 				<div class="pl-[32px]">
@@ -29,7 +29,6 @@
 
 <script>
 import { FeatherIcon } from "frappe-ui"
-import { inject, computed } from "vue"
 
 export default {
 	name: "CallLogCard",
@@ -37,20 +36,19 @@ export default {
 	components: {
 		FeatherIcon,
 	},
-	setup(props) {
-		const $socket = inject("$socket")
-		const $agents = inject("$agents")
-		const agent = computed(() => {
-			if (!props.callLog) return
-			return $agents.get(
-				{ agentId: props.callLog.reference_agent },
-				{ $socket }
-			).value
-		})
-
-		return {
-			agent,
-		}
+	computed: {
+		agent() {
+			return this.$resources.agent
+		},
+	},
+	resources: {
+		agent() {
+			return {
+				type: "document",
+				doctype: "Agent",
+				name: this.callLog.reference_agent,
+			}
+		},
 	},
 }
 </script>

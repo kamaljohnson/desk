@@ -234,6 +234,7 @@ export default {
 			}
 		},
 		getOngoingCall() {
+			if (!(this.user && this.user.agent)) return
 			return {
 				method: "frappe.client.get_list",
 				params: {
