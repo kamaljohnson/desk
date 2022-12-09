@@ -79,7 +79,9 @@ def outbound(**kwargs):
 	dial = Dial(caller_id=twilio_call_log.twilio_number,)
 	dial.number(
 		twilio_call_log.from_,
-		status_callback_event="initiated ringing answered completed",
+		status_callback_event=(
+			"queued initiated ringing in-progress completed busy no-answer canceled failed"
+		),
 		status_callback=get_public_url("/api/method/frappedesk.api.twilio.call_events"),
 		status_callback_method="POST",
 	)
