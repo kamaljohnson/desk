@@ -24,7 +24,7 @@ app.directive("on-outside-click", onOutsideClickDirective)
 app.use(router)
 app.use(FrappeUI, {
 	socketio: {
-		port: socketio_port,
+		port: socketio_port || 9000,
 	},
 })
 
