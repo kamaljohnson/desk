@@ -27,13 +27,11 @@ function get(options, vm) {
 	const fieldname = options?.fieldname
 
 	let resource = createTicketDocumentResource(ticketId, vm)
+	if (!resource.doc) {
+		resource.get.fetch()
+	}
 	let value = computed(() => {
-		if (!resource?.doc) {
-			if (resource) {
-				resource.get.fetch()
-			}
-			return null
-		}
+		if (!resource.doc) return null
 		return fieldname ? resource.doc[fieldname] : resource.doc
 	})
 	return value
