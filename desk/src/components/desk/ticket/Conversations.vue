@@ -74,7 +74,6 @@ export default {
 	resources: {
 		communications() {
 			return {
-				cache: ["Ticket", "Conversations", this.ticketId],
 				method: "frappedesk.api.ticket.get_conversations",
 				params: {
 					ticket_id: this.ticketId,
@@ -84,7 +83,6 @@ export default {
 		},
 		comments() {
 			return {
-				cache: ["Ticket", "Comments", this.ticketId],
 				method: "frappe.client.get_list",
 				params: {
 					doctype: "Frappe Desk Comment",
@@ -99,7 +97,6 @@ export default {
 		},
 		callLogs() {
 			return {
-				cache: ["Ticket", "FD Twilio Call Logs", this.ticketId],
 				method: "frappe.client.get_list",
 				params: {
 					doctype: "FD Twilio Call Log",

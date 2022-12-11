@@ -1,6 +1,6 @@
 <template>
 	<div
-		v-if="callLog && agent.doc"
+		v-if="callLog && agent"
 		class="flex flex-col my-[16px] px-[8px] text-base"
 	>
 		<div class="flex flex-row justify-between">
@@ -13,7 +13,7 @@
 						/>
 					</div>
 					<div class="font-medium text-base text-gray-900">
-						{{ agent.doc.agent_name }}
+						{{ agent.agent_name }}
 					</div>
 				</div>
 				<div class="pl-[32px]">
@@ -38,7 +38,7 @@ export default {
 	},
 	computed: {
 		agent() {
-			return this.$resources.agent
+			return this.$resources.agent.doc || null
 		},
 	},
 	resources: {
