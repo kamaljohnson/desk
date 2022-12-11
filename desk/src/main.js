@@ -16,6 +16,7 @@ import { event } from "@/utils/event"
 import { tickets } from "@/controllers/tickets"
 import { contacts } from "@/controllers/contacts"
 import { fdSettings } from "@/controllers/fdSettings"
+import { socketio_port } from "../../../../sites/common_site_config.json"
 
 let app = createApp(App)
 
@@ -23,7 +24,7 @@ app.directive("on-outside-click", onOutsideClickDirective)
 app.use(router)
 app.use(FrappeUI, {
 	socketio: {
-		port: 9000,
+		port: socketio_port,
 	},
 })
 
