@@ -13,7 +13,6 @@ import "./index.css"
 import { dayjs } from "@/utils"
 import { createToast, clearToasts } from "@/utils/toasts"
 import { event } from "@/utils/event"
-import { socketio_port } from "../../../../sites/common_site_config.json"
 import { tickets } from "@/controllers/tickets"
 import { contacts } from "@/controllers/contacts"
 import { fdSettings } from "@/controllers/fdSettings"
@@ -24,7 +23,7 @@ app.directive("on-outside-click", onOutsideClickDirective)
 app.use(router)
 app.use(FrappeUI, {
 	socketio: {
-		port: socketio_port || 9000,
+		port: 9000,
 	},
 })
 
