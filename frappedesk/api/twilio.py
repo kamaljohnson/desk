@@ -3,6 +3,7 @@ import frappe
 from twilio.twiml.voice_response import VoiceResponse, Dial
 from frappedesk.utils import get_public_url
 from frappedesk.handler.twilio import Twilio
+from frappe import _
 
 
 @frappe.whitelist()
@@ -66,17 +67,27 @@ def outbound(**kwargs):
 	assert args.AccountSid == twilio.account_sid
 
 	twilio_call_log = frappe.get_doc("FD Twilio Call Log", {"call_sid": args.CallSid})
+	twilio_settings = frappe.get_doc("Twilio Settings")
 
 	resp = VoiceResponse()
 
-	# uncomment this to say some thing to the client before connecting the call
-	# resp.say(
-	# 	"This call may be recorded for quality assurance purposes.", voice="alice",
-	# )
+	resp.say(
+		"Hi, this call is from CRED. please wait, We will assign an agent to you"
+		" shortly, This call may be recorded for quality and training purpose",
+		voice="alice",
+	)
 
-	print("twilio_call_log", twilio_call_log)
+	resp.record(timeout=10)
 
-	dial = Dial(caller_id=twilio_call_log.twilio_number,)
+	dial = Dial(
+		caller_id=twilio_call_log.twilio_number,
+		record=twilio_settings.record_calls,
+		recording_status_callback=get_public_url(
+			"/api/method/frappedesk.api.twilio.update_recording_info"
+		),
+		recording_status_callback_event="completed",
+	)
+
 	dial.number(
 		twilio_call_log.from_,
 		status_callback_event=(
@@ -102,6 +113,19 @@ def call_events(**kwargs):
 			"FD Twilio Call Log", {"call_sid": args.ParentCallSid}
 		)
 		twilio_call_log.status = args.CallStatus
-		if twilio_call_log.status == "in-progress" and not twilio_call_log.call_started_at:
+		if twilio_call_log.status == "answered" or (
+			twilio_call_log.status == "in-progress" and not twilio_call_log.call_started_at
+		):
 			twilio_call_log.call_started_at = frappe.utils.now()
 		twilio_call_log.save(ignore_permissions=True)
+
+
+@frappe.whitelist(allow_guest=True)
+def update_recording_info(**kwargs):
+	try:
+		args = frappe._dict(kwargs)
+		recording_url = args.RecordingUrl
+		call_sid = args.CallSid
+		frappe.db.set_value("FD Twilio Call Log", call_sid, "recording_url", recording_url)
+	except:
+		frappe.log_error(title=_("Failed to capture Twilio recording"))

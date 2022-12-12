@@ -4,7 +4,13 @@
 	"doctype": "DocType",
 	"editable_grid": 1,
 	"engine": "InnoDB",
-	"field_order": ["account_sid", "enabled", "column_break_3", "auth_token"],
+	"field_order": [
+		"account_sid",
+		"enabled",
+		"column_break_3",
+		"auth_token",
+		"record_calls"
+	],
 	"fields": [
 		{
 			"fieldname": "account_sid",
@@ -27,12 +33,18 @@
 			"fieldname": "enabled",
 			"fieldtype": "Check",
 			"label": "Enabled"
+		},
+		{
+			"default": "0",
+			"fieldname": "record_calls",
+			"fieldtype": "Check",
+			"label": "Record Calls"
 		}
 	],
 	"index_web_pages_for_search": 1,
 	"issingle": 1,
 	"links": [],
-	"modified": "2022-12-06 08:11:24.995857",
+	"modified": "2022-12-12 16:49:45.264730",
 	"modified_by": "Administrator",
 	"module": "FrappeDesk",
 	"name": "Twilio Settings",
