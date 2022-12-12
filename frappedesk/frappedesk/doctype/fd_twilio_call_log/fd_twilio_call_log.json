@@ -12,6 +12,7 @@
 		"to",
 		"from_",
 		"status",
+		"call_started_at",
 		"duration",
 		"recording_url",
 		"references_section",
@@ -84,11 +85,16 @@
 			"in_list_view": 1,
 			"label": "Contact",
 			"options": "Contact"
+		},
+		{
+			"fieldname": "call_started_at",
+			"fieldtype": "Datetime",
+			"label": "Call Started At"
 		}
 	],
 	"index_web_pages_for_search": 1,
 	"links": [],
-	"modified": "2022-12-07 01:41:07.540739",
+	"modified": "2022-12-12 16:32:46.144458",
 	"modified_by": "Administrator",
 	"module": "FrappeDesk",
 	"name": "FD Twilio Call Log",
