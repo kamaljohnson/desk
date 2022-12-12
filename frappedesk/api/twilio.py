@@ -122,9 +122,23 @@ def update_recording_info(**kwargs):
 		args = frappe._dict(kwargs)
 		recording_url = args.RecordingUrl
 		call_sid = args.CallSid
+		update_call_duration(call_sid)
 		frappe.db.set_value(
 			"FD Twilio Call Log", {"call_sid": call_sid}, "recording_url", recording_url
 		)
 		frappe.db.commit()
 	except:
 		frappe.log_error(title=_("Failed to capture Twilio recording"))
+
+
+def update_call_duration(call_sid):
+	twilio = Twilio.connect()
+	if not (twilio and frappe.db.exists("FD Twilio Call Log", {"call_sid": call_sid})):
+		return
+
+	call_details = twilio.get_call_info(call_sid)
+	call_log = frappe.get_doc("FD Twilio Call Log", {"call_sid": call_sid})
+	call_log.duration = call_details.duration
+	call_log.flags.ignore_permissions = True
+	call_log.save()
+	frappe.db.commit()

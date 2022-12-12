@@ -52,3 +52,6 @@ class Twilio:
 		)
 
 		return call
+
+	def get_call_info(self, call_sid):
+		return self.twilio_client.calls(call_sid).fetch()
