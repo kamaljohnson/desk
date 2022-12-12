@@ -16,7 +16,7 @@ import { event } from "@/utils/event"
 import { tickets } from "@/controllers/tickets"
 import { contacts } from "@/controllers/contacts"
 import { fdSettings } from "@/controllers/fdSettings"
-import { socketio_port } from "../../../../config.json"
+import { socketio_port } from "../../../../sites/common_site_config.json"
 
 let app = createApp(App)
 
