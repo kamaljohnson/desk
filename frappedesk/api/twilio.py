@@ -77,8 +77,6 @@ def outbound(**kwargs):
 		voice="alice",
 	)
 
-	resp.record(timeout=10)
-
 	dial = Dial(
 		caller_id=twilio_call_log.twilio_number,
 		record=twilio_settings.record_calls,
@@ -113,9 +111,7 @@ def call_events(**kwargs):
 			"FD Twilio Call Log", {"call_sid": args.ParentCallSid}
 		)
 		twilio_call_log.status = args.CallStatus
-		if twilio_call_log.status == "answered" or (
-			twilio_call_log.status == "in-progress" and not twilio_call_log.call_started_at
-		):
+		if twilio_call_log.status == "in-progress" and not twilio_call_log.call_started_at:
 			twilio_call_log.call_started_at = frappe.utils.now()
 		twilio_call_log.save(ignore_permissions=True)
 
@@ -126,6 +122,9 @@ def update_recording_info(**kwargs):
 		args = frappe._dict(kwargs)
 		recording_url = args.RecordingUrl
 		call_sid = args.CallSid
-		frappe.db.set_value("FD Twilio Call Log", call_sid, "recording_url", recording_url)
+		frappe.db.set_value(
+			"FD Twilio Call Log", {"call_sid": call_sid}, "recording_url", recording_url
+		)
+		frappe.db.commit()
 	except:
 		frappe.log_error(title=_("Failed to capture Twilio recording"))
