@@ -1,5 +1,5 @@
 <template>
-	<div v-if="show" class="absolute bottom-11 right-0 m-4">
+	<div class="absolute bottom-11 right-0 m-4">
 		<div class="w-[20rem] rounded-lg border bg-white p-3 shadow-md">
 			<div v-if="callLog" class="flex flex-col space-y-3">
 				<div
@@ -12,13 +12,7 @@
 						<Avatar size="lg" label="Contact Id" />
 						<div class="flex flex-col space-y-0.5 items-center">
 							<div>
-								{{
-									`${contact.first_name} ${
-										contact.last_name
-											? contact.last_name
-											: ""
-									}`
-								}}
+								{{ callLog.reference_contact }}
 							</div>
 							<div class="text-base text-gray-500">
 								{{ callLog.to }}
@@ -84,67 +78,27 @@
 </template>
 
 <script>
-import { Avatar, FeatherIcon, createDocumentResource } from "frappe-ui"
-import { ref, computed, inject } from "vue"
+import { Avatar, FeatherIcon } from "frappe-ui"
 
 export default {
 	name: "Dialer",
-	props: {},
+	props: ["callLogId"],
 	components: {
 		Avatar,
 		FeatherIcon,
 	},
+	mounted() {
+		console.log("call log id: ", this.callLogId)
+	},
 	data() {
 		return {
-			show: false,
+			callDuration: null,
 		}
 	},
-	setup(context) {
-		const user = inject("user")
-		const callDuration = ref(null)
-		const resource = ref(null)
-		const $socket = inject("$socket")
-		const createCallLogDocumentResource = (callLogId) => {
-			resource.value = createDocumentResource(
-				{
-					doctype: "FD Twilio Call Log",
-					name: callLogId,
-					debounce: 300,
-					realtime: true,
-				},
-				{ $socket }
-			)
-		}
-
-		const callLog = computed(() => {
-			if (!resource.value?.doc) {
-				if (resource.value) {
-					resource.value.get.fetch()
-				}
-				return null
-			}
-			return resource.value.doc
-		})
-
-		const $contacts = inject("$contacts")
-		const contact = computed(() => {
-			if (!callLog.value) return
-			return $contacts.get(
-				{ contactId: callLog.value.contact_ref },
-				context
-			).value
-		})
-
-		return {
-			user,
-
-			callDuration,
-			callLog,
-			contact,
-
-			createCallLogDocumentResource,
-			resource,
-		}
+	computed: {
+		callLog() {
+			this.$resources.callLog.doc || null
+		},
 	},
 	watch: {
 		callLog(newVal) {
@@ -170,96 +124,21 @@ export default {
 			}
 		},
 	},
-	mounted() {
-		// check if any ongoing call is there for the current agent. if yes, then fetch the call log
-		if (this.user && this.user.agent) {
-			this.$resources.getOngoingCall.fetch()
-		}
-
-		this.$socket.on("list_update", (data) => {
-			if (this.callLog) {
-				if (
-					data["doctype"] === "FD Twilio Call Log" &&
-					data["name"] === this.callLog.name
-				) {
-					if (this.resource) {
-						this.resource.get.fetch()
-					}
-				}
-			}
-		})
-		this.$event.on("dialer:make-call", (options) => {
-			if (this.show) {
-				// TODO: check if current call is active, is yes then show alert, else make call
-				this.$toast({
-					title: "Call already in progress",
-					customIcon: "circle-fail",
-					appearance: "danger",
-				})
-				return
-			}
-			this.show = true
-			this.$resources.makeCall.submit(options)
-		})
-	},
-	unmounted() {
-		this.$socket.off("list_update")
-		this.$event.off("dialer:make-call")
-	},
 	methods: {
-		makeCall(options) {},
 		async closeDialer() {
 			await new Promise((resolve) => setTimeout(resolve, 3000))
-			this.show = false
+			this.$emit("closeDialer")
 		},
 		callLogEndStatuses() {
 			return ["completed", "busy", "no-answer", "canceled", "failed"]
 		},
 	},
 	resources: {
-		makeCall() {
+		callLog() {
 			return {
-				method: "frappedesk.api.twilio.call",
-				onSuccess: (callLogId) => {
-					this.createCallLogDocumentResource(callLogId)
-				},
-				onError: (err) => {
-					this.$toast({
-						title: "Something went wrong while making call",
-						text: err,
-						customIcon: "circle-fail",
-						appearance: "danger",
-					})
-				},
-			}
-		},
-		getOngoingCall() {
-			if (!(this.user && this.user.agent)) return
-			return {
-				method: "frappe.client.get_list",
-				params: {
-					doctype: "FD Twilio Call Log",
-					filters: {
-						reference_agent: this.user.agent.name,
-						status: [
-							"not in",
-							[
-								"completed",
-								"busy",
-								"no-answer",
-								"canceled",
-								"failed",
-							],
-						],
-					},
-					fields: ["name"],
-				},
-				onSuccess: (res) => {
-					if (res.length) {
-						this.show = true
-						this.createCallLogDocumentResource(res[0].name)
-					}
-				},
+				type: "document",
+				doctype: "FD Twilio Call Log",
+				name: "CLOG-0000199-0000312",
 			}
 		},
 	},
