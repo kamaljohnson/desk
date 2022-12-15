@@ -87,9 +87,6 @@ export default {
 		Avatar,
 		FeatherIcon,
 	},
-	mounted() {
-		console.log("call log id: ", this.callLogId)
-	},
 	data() {
 		return {
 			callDuration: null,
@@ -97,40 +94,34 @@ export default {
 	},
 	computed: {
 		callLog() {
-			this.$resources.callLog.doc || null
-		},
-	},
-	watch: {
-		callLog(newVal) {
-			if (newVal) {
-				if (newVal.call_started_at) {
-					setInterval(() => {
-						let nowTime = new Date(this.$dayjs())
-						let startTime = new Date(
-							this.$dayjs(newVal.call_started_at)
-						)
-						this.callDuration = this.$dayjs
-							.duration(
-								parseInt((nowTime - startTime) / 1000),
-								"seconds"
-							)
-							.format("H:m:s")
-					}, 1000)
+			const log = this.$resources.callLog.doc || null
+			if (log) {
+				if (log.call_started_at && !this.callDuration) {
+					startCallDurationUpdateInterval(log.call_started_at)
 				}
-				// if call log status belongs to one of the end states, then close the dialer
-				if (this.callLogEndStatuses().includes(newVal.status)) {
+				if (this.callLogEndStatuses().includes(log.status)) {
 					this.closeDialer()
 				}
 			}
+			return log
 		},
 	},
 	methods: {
 		async closeDialer() {
 			await new Promise((resolve) => setTimeout(resolve, 3000))
-			this.$emit("closeDialer")
+			this.$emit("close-dialer")
 		},
 		callLogEndStatuses() {
 			return ["completed", "busy", "no-answer", "canceled", "failed"]
+		},
+		startCallDurationUpdateInterval(callStartedAt) {
+			setInterval(() => {
+				let nowTime = new Date(this.$dayjs())
+				let startTime = new Date(this.$dayjs(callStartedAt))
+				this.callDuration = this.$dayjs
+					.duration(parseInt((nowTime - startTime) / 1000), "seconds")
+					.format("H:m:s")
+			}, 1000)
 		},
 	},
 	resources: {
@@ -138,7 +129,7 @@ export default {
 			return {
 				type: "document",
 				doctype: "FD Twilio Call Log",
-				name: "CLOG-0000199-0000312",
+				name: this.callLogId,
 			}
 		},
 	},

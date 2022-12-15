@@ -1,7 +1,14 @@
 <template>
 	<div>
 		<div v-for="callLog in callLogs" :key="callLog">
-			<Dialer :callLogId="callLog" />
+			<Dialer
+				:callLogId="callLog"
+				@close-dialer="
+					() => {
+						callLogs.slice(callLogs.indexOf(callLog), 1)
+					}
+				"
+			/>
 		</div>
 	</div>
 </template>
