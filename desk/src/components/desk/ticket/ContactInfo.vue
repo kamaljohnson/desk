@@ -32,6 +32,7 @@
 				</a>
 			</div>
 			<div
+				v-if="twilioSettings?.enabled && user.agent"
 				class="bg-blue-500 text-white px-2 py-0.5 rounded-md shadow-sm hover:shadow-md"
 				role="button"
 				@click="
@@ -70,6 +71,7 @@
 <script>
 import { FeatherIcon } from "frappe-ui"
 import CustomAvatar from "@/components/global/CustomAvatar.vue"
+import { inject } from "vue"
 
 export default {
 	name: "ContactInfo",
@@ -78,9 +80,19 @@ export default {
 		FeatherIcon,
 		CustomAvatar,
 	},
+	setup() {
+		const user = inject("user")
+
+		return {
+			user,
+		}
+	},
 	computed: {
 		contact() {
 			return this.$resources.contact.doc || null
+		},
+		twilioSettings() {
+			return this.$resources.twilioSettings.doc || null
 		},
 		contactFullName() {
 			if (this.contact) {
@@ -98,6 +110,13 @@ export default {
 				type: "document",
 				doctype: "Contact",
 				name: this.contactId,
+			}
+		},
+		twilioSettings() {
+			return {
+				type: "document",
+				doctype: "Twilio Settings",
+				name: "Twilio Settings",
 			}
 		},
 	},

@@ -41,8 +41,7 @@ export default {
 				})
 				return
 			}
-			// this.makeCall(options)
-			this.createDialer("CLOG-0000199-0000312")
+			this.makeCall(options)
 		})
 	},
 	computed: {
