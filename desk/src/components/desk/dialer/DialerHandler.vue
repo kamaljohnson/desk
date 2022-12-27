@@ -31,7 +31,6 @@ export default {
 		Dialer,
 	},
 	mounted() {
-		this.$resources.getOutgoingCall.fetch()
 		this.$event.on("dialer:make-call", (options) => {
 			if (this.dialerBusy) {
 				this.$toast({
@@ -95,6 +94,7 @@ export default {
 					},
 					fields: ["name"],
 				},
+				auto: true,
 				onSuccess: (res) => {
 					if (res.length) {
 						this.createDialer(res[0].name)
