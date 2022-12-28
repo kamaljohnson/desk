@@ -1,0 +1,58 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-12-28 11:27:28.156799",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "script",
+  "block_to_execute_if_true",
+  "block_to_execute_if_false"
+ ],
+ "fields": [
+  {
+   "fieldname": "script",
+   "fieldtype": "Link",
+   "label": "Script",
+   "options": "Server Script"
+  },
+  {
+   "fieldname": "block_to_execute_if_true",
+   "fieldtype": "Link",
+   "label": "Block to Execute if True",
+   "options": "Action Block"
+  },
+  {
+   "fieldname": "block_to_execute_if_false",
+   "fieldtype": "Link",
+   "label": "Block to Execute if False",
+   "options": "Action Block"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-12-28 14:19:31.733106",
+ "modified_by": "Administrator",
+ "module": "Ticket Automation",
+ "name": "Condition",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

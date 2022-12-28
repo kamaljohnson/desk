@@ -1,0 +1,40 @@
+{
+ "actions": [],
+ "autoname": "autoincrement",
+ "creation": "2022-12-27 22:08:08.129263",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "type",
+  "link"
+ ],
+ "fields": [
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Condition\nAction\nFlow"
+  },
+  {
+   "fieldname": "link",
+   "fieldtype": "Dynamic Link",
+   "label": "Link",
+   "options": "type"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2022-12-27 22:08:08.129263",
+ "modified_by": "Administrator",
+ "module": "FrappeDesk",
+ "name": "Block",
+ "naming_rule": "Autoincrement",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
