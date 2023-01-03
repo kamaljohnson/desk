@@ -1,70 +1,90 @@
 <template>
-	<div>
-		<slot id="form-body">
+	<div class="flex flex-col space-y-2">
+		<div class="flex flex-col space-y-2">
 			<div v-for="field in fields" :key="field.fieldname">
 				<TicketField
 					:ticketId="ticketId"
 					:fieldname="field.fieldname"
 					:value="values[field.fieldname]"
-					:editable="field.editable"
+					:editable="field.editable || false"
 					@change="
 						(val) => {
-							updateFieldValue(field.fieldname, val)
+							if (!editing) {
+								editing = true
+								tempValues = { ...ticket }
+							}
+							tempValues[field.fieldname] = val
 						}
 					"
 				/>
 			</div>
-		</slot>
-		<slot id="submit-action">
-			<Button @click="save">Save</Button>
-		</slot>
-		<slot id="cancel-action"></slot>
+		</div>
+		<div class="flex flex-row-reverse w-full">
+			<div v-if="editing" class="flex flex-row space-x-2">
+				<Button @click="cancel"> Cancel </Button>
+				<Button
+					appearance="primary"
+					@click="
+						() => {
+							if (validate()) {
+								save()
+							}
+						}
+					"
+				>
+					Save
+				</Button>
+			</div>
+		</div>
 	</div>
 </template>
 
 <script>
 import { ref } from "vue"
+import TicketField from "@/components/global/TicketField.vue"
 
 export default {
 	name: "TicketForm",
-	props: ["ticketId", "isNew", "fields"],
+	props: ["ticketId", "fields"],
+	components: {
+		TicketField,
+	},
 	setup() {
-		const formValues = ref({}) // {'subject': 'test', 'description': 'test''}
-		const formErrors = ref({}) // {'subject': 'error in subject', 'description': 'error in description'}
+		const editing = ref(false)
+		const tempValues = ref({})
+		const errors = ref({})
 
 		return {
-			formValues,
-			formErrors,
+			editing,
+			tempValues,
+			errors,
 		}
 	},
 	computed: {
 		ticket() {
-			if (this.isNew) return
 			return this.$resources.ticket.doc
 		},
-	},
-	mounted() {
-		this.formValues = this.getTicketInitialValues(
-			this.isNew ? {} : this.ticket
-		)
+		values() {
+			if (this.editing) {
+				return this.tempValues
+			} else {
+				return this.ticket
+			}
+		},
 	},
 	methods: {
-		updateFieldValue(fieldname, value) {},
-		validate() {},
-		save() {},
-		cancel() {},
-		getTicketInitialValues(ticket = {}) {
-			const values = {}
-			this.fields.forEach((field) => {
-				values[field.fieldname] =
-					ticket[field.fieldname] || field.default || ""
-			})
-			return values
+		validate() {
+			return true
+		},
+		save() {
+			console.log("save")
+		},
+		cancel() {
+			this.editing = false
 		},
 	},
 	resources: {
 		ticket() {
-			if (this.isNew) return
 			return {
 				type: "document",
 				doctype: "Ticket",

@@ -1,130 +1,161 @@
 <template>
-	<div v-if="ticket" class="flex flex-col h-full">
-		<div class="pl-[19px] pr-[17px] pt-[18px] pb-[28px] dashes">
-			<div class="text-base space-y-[11px]">
-				<div class="flex flex-col space-y-[2px]">
-					<div class="flex flex-row space-x-[5.33px] items-center">
-						<div class="text-gray-600 text-[12px]">
-							First Response Due
+	<div>
+		<div v-if="ticket" class="flex flex-col h-full">
+			<div class="pl-[19px] pr-[17px] pt-[18px] pb-[28px] dashes">
+				<div class="text-base space-y-[11px]">
+					<div class="flex flex-col space-y-[2px]">
+						<div
+							class="flex flex-row space-x-[5.33px] items-center"
+						>
+							<div class="text-gray-600 text-[12px]">
+								First Response Due
+							</div>
+							<CustomIcons
+								v-if="firstResponseStatus()"
+								:name="
+									{ Success: 'sla-pass', Failed: 'sla-fail' }[
+										firstResponseStatus()
+									]
+								"
+								class="w-[16px] h-[16px]"
+							/>
 						</div>
-						<CustomIcons
-							v-if="firstResponseStatus()"
-							:name="
-								{ Success: 'sla-pass', Failed: 'sla-fail' }[
-									firstResponseStatus()
-								]
-							"
-							class="w-[16px] h-[16px]"
-						/>
-					</div>
-					<div class="font-normal text-gray-900">
-						{{
-							getFormatedDate(
-								ticket.response_by,
-								"ddd, MMM DD, HH:mm"
-							)
-						}}
-					</div>
-				</div>
-				<div class="flex flex-col space-y-[2px]">
-					<div class="flex flex-row space-x-[5.33px] items-center">
-						<div class="text-gray-600 text-[12px]">
-							Resolution Due
+						<div class="font-normal text-gray-900">
+							{{
+								getFormatedDate(
+									ticket.response_by,
+									"ddd, MMM DD, HH:mm"
+								)
+							}}
 						</div>
-						<CustomIcons
-							v-if="resolutionStatus() != 'Paused'"
-							:name="
-								{ Success: 'sla-pass', Failed: 'sla-fail' }[
-									resolutionStatus()
-								]
-							"
-							class="w-[16px] h-[16px]"
-						/>
-						<Badge v-else color="blue">Paused</Badge>
 					</div>
-					<div class="font-normal text-gray-900">
-						{{
-							getFormatedDate(
-								ticket.resolution_by,
-								"ddd, MMM DD, HH:mm"
-							)
-						}}
+					<div class="flex flex-col space-y-[2px]">
+						<div
+							class="flex flex-row space-x-[5.33px] items-center"
+						>
+							<div class="text-gray-600 text-[12px]">
+								Resolution Due
+							</div>
+							<CustomIcons
+								v-if="resolutionStatus() != 'Paused'"
+								:name="
+									{ Success: 'sla-pass', Failed: 'sla-fail' }[
+										resolutionStatus()
+									]
+								"
+								class="w-[16px] h-[16px]"
+							/>
+							<Badge v-else color="blue">Paused</Badge>
+						</div>
+						<div class="font-normal text-gray-900">
+							{{
+								getFormatedDate(
+									ticket.resolution_by,
+									"ddd, MMM DD, HH:mm"
+								)
+							}}
+						</div>
 					</div>
 				</div>
 			</div>
-		</div>
-		<div>
-			<span
-				class="dot fixed ml-[-1px] mt-[-10.5px] bg-gray-50 border-r border-t border-b"
-			></span>
-			<span
-				class="dot rotate-180 fixed ml-[241.5px] mt-[-10.5px] bg-white border-r border-t border-b"
-			></span>
-		</div>
-		<div
-			class="px-[19px] py-[28px] h-full overflow-y-auto flex flex-col space-y-2.5"
-		>
-			<div
-				class="flex flex-col space-y-[12px] pb-5"
-				:class="{ 'border-b': customFields?.length > 0 }"
-			>
-				<!-- Show system ticket fields: Status, Ticket Type, Priority and Agent Group  -->
-				<div
-					v-for="fieldname in [
-						'_assign',
-						'status',
-						'ticket_type',
-						'priority',
-						'agent_group',
+			<div>
+				<span
+					class="dot fixed ml-[-1px] mt-[-10.5px] bg-gray-50 border-r border-t border-b"
+				></span>
+				<span
+					class="dot rotate-180 fixed ml-[241.5px] mt-[-10.5px] bg-white border-r border-t border-b"
+				></span>
+			</div>
+			<div class="p-4">
+				<TicketForm
+					:ticketId="ticketId"
+					:fields="[
+						{
+							fieldname: '_assign',
+							editable: true,
+						},
+						{
+							fieldname: 'status',
+							editable: true,
+						},
+						{
+							fieldname: 'ticket_type',
+							editable: true,
+						},
+						{
+							fieldname: 'agent_group',
+							editable: true,
+						},
+						{
+							fieldname: 'priority',
+							editable: true,
+						},
 					]"
-					:key="fieldname"
-				>
-					<TicketField
-						:ref="`field-${fieldname}-input`"
-						:ticketId="ticket.name"
-						:fieldname="fieldname"
-						:editable="true"
-						:validate="
-							function () {
-								// remove the validation error, from current field if any (since the value is updated)
-								if (validationErrorFields.includes(fieldname)) {
-									validationErrorFields.splice(
-										validationErrorFields.indexOf(
-											fieldname
-										),
-										1
-									)
-								}
-								if (fieldname === 'status') {
-									if (!ticket.ticket_type) {
-										validationErrorFields.push(
-											'ticket_type'
-										)
-										return false
-									}
-								}
-								return true
-							}
-						"
-						:triggerValidationError="
-							validationErrorFields.includes(fieldname)
-						"
-					/>
-				</div>
+				/>
 			</div>
-			<div class="flex flex-col space-y-[12px]">
-				<!-- Show all the ticket custom fields that can be viewed by an agent -->
+			<!-- <div
+				class="px-[19px] py-[28px] h-full overflow-y-auto flex flex-col space-y-2.5"
+			>
 				<div
-					v-for="customField in customFields"
-					:key="customField.fieldname"
+					class="flex flex-col space-y-[12px] pb-5"
+					:class="{ 'border-b': customFields?.length > 0 }"
 				>
-					<TicketField
-						:ticketId="ticket.name"
-						:fieldname="customField.fieldname"
-						:editable="customField.is_editable_by_agent"
-					/>
+					<div
+						v-for="fieldname in [
+							'_assign',
+							'status',
+							'ticket_type',
+							'priority',
+							'agent_group',
+						]"
+						:key="fieldname"
+					>
+						<TicketField
+							:ref="`field-${fieldname}-input`"
+							:ticketId="ticket.name"
+							:fieldname="fieldname"
+							:editable="true"
+							:validate="
+								function () {
+									// remove the validation error, from current field if any (since the value is updated)
+									if (validationErrorFields.includes(fieldname)) {
+										validationErrorFields.splice(
+											validationErrorFields.indexOf(
+												fieldname
+											),
+											1
+										)
+									}
+									if (fieldname === 'status') {
+										if (!ticket.ticket_type) {
+											validationErrorFields.push(
+												'ticket_type'
+											)
+											return false
+										}
+									}
+									return true
+								}
+							"
+							:triggerValidationError="
+								validationErrorFields.includes(fieldname)
+							"
+						/>
+					</div>
 				</div>
-			</div>
+				<div class="flex flex-col space-y-[12px]">
+					<div
+						v-for="customField in customFields"
+						:key="customField.fieldname"
+					>
+						<TicketField
+							:ticketId="ticket.name"
+							:fieldname="customField.fieldname"
+							:editable="customField.is_editable_by_agent"
+						/>
+					</div>
+				</div>
+			</div> -->
 		</div>
 	</div>
 </template>
@@ -133,6 +164,7 @@
 import { FeatherIcon, Badge } from "frappe-ui"
 import { inject, ref } from "@vue/runtime-core"
 import TicketField from "@/components/global/TicketField.vue"
+import TicketForm from "@/components/global/TicketForm.vue"
 import CustomIcons from "@/components/desk/global/CustomIcons.vue"
 
 export default {
@@ -142,6 +174,7 @@ export default {
 		Badge,
 		FeatherIcon,
 		TicketField,
+		TicketForm,
 		CustomIcons,
 	},
 	setup() {

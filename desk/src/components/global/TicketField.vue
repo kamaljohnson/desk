@@ -1,4 +1,3 @@
-2
 <template>
 	<div class="flex flex-col space-y-[8px]">
 		<div class="text-[12px] text-gray-600">
@@ -14,7 +13,7 @@
 						onInput(val)
 					}
 				"
-				:value="fieldValue"
+				:value="value"
 				:debounce="300"
 				:disabled="!editable"
 			/>
@@ -26,7 +25,7 @@
 				:class="{
 					'border-red-500 border': triggerValidationError,
 				}"
-				:value="fieldValue"
+				:value="value"
 				@change="
 					(val) => {
 						onInput(val?.value)
@@ -41,11 +40,14 @@
 
 <script>
 import Autocomplete from "@/components/global/Autocomplete.vue"
-import { inject, computed } from "vue"
 
 export default {
 	name: "TicketField",
 	props: {
+		autoSave: {
+			type: Boolean,
+			default: false,
+		},
 		ticketId: {
 			type: Number,
 			required: true,
@@ -68,6 +70,10 @@ export default {
 			type: Boolean,
 			default: false,
 		},
+		value: {
+			type: String,
+			default: null,
+		},
 		// TODO: use a prop to trigger mandatory field validation errors: use case (ticket type should be set before changing ticket status)
 	},
 	components: {
@@ -79,12 +85,6 @@ export default {
 		},
 		fieldMetaInfo() {
 			return this.$resources.fieldMetaInfo.data || null
-		},
-		fieldValue() {
-			if (this.fieldname == "_assign") {
-				return this.$resources.getAssignee.data?.agent_name || null
-			}
-			return this.ticket?.[this.fieldname] || null
 		},
 	},
 	mounted() {
@@ -168,23 +168,27 @@ export default {
 	},
 	methods: {
 		onInput(value) {
-			if (this.validate()) {
-				if (this.fieldname == "_assign") {
-					this.$resources.setTicketAssignee.submit({
-						ticket_id: this.ticketId,
-						agent_id: value,
-					})
+			if (this.autoSave) {
+				if (this.validate()) {
+					if (this.fieldname == "_assign") {
+						this.$resources.setTicketAssignee.submit({
+							ticket_id: this.ticketId,
+							agent_id: value,
+						})
+					} else {
+						let val = {}
+						val[this.fieldname] = value
+						this.$resources.ticket.setValue.submit(val)
+					}
 				} else {
-					let val = {}
-					val[this.fieldname] = value
-					this.$resources.ticket.setValue.submit(val)
+					this.$toast({
+						title: "Please fill all mandatory fields.",
+						customIcon: "circle-fail",
+						appearance: "danger",
+					})
 				}
 			} else {
-				this.$toast({
-					title: "Please fill all mandatory fields.",
-					customIcon: "circle-fail",
-					appearance: "danger",
-				})
+				this.$emit("change", value)
 			}
 		},
 		getResourceOptions() {
